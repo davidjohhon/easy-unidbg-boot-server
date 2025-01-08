@@ -10,9 +10,6 @@ import com.github.unidbg.memory.Memory;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * 达川观察
- */
 public class DcWtf extends AbstractJni {
 
     private final AndroidEmulator emulator;
@@ -25,20 +22,13 @@ public class DcWtf extends AbstractJni {
     private static final String classPath = "cn/thecover/lib/common/manager/SignManager";
 
     public DcWtf() {
-        // 创建模拟器实例，要模拟32位或者64位，在这里区分
         emulator = AndroidEmulatorBuilder.for64Bit().setProcessName(processName).addBackendFactory(new Unicorn2Factory(true)).build(); // 创建模拟器实例，要模拟32位或者64位，在这里区分
-        // 模拟器的内存操作接口
         Memory memory = emulator.getMemory();
-        // 设置系统类库解析
         memory.setLibraryResolver(new AndroidResolver(23));
-        // 创建Android虚拟机
         vm = emulator.createDalvikVM();
         vm.setJni(this);
-        // 设置是否打印Jni调用细节
         vm.setVerbose(false);
-        //加载libttEncrypt.so到unicorn虚拟内存，加载成功以后会默认调用init_array等函数
         DalvikModule dm = vm.loadLibrary(new File(filePath), false);
-        // 手动执行JNI_OnLoad函数
         dm.callJNI_OnLoad(emulator);
         dvmClass = vm.resolveClass(classPath);
     }
@@ -61,11 +51,6 @@ public class DcWtf extends AbstractJni {
     }
 
 
-    /**
-     * 销毁模拟器
-     *
-     * @throws IOException
-     */
     public void destroy() throws IOException {
         emulator.close();
     }

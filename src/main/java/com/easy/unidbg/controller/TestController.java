@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
 
-/**
- * 测试 API
- */
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
@@ -23,9 +21,9 @@ public class TestController {
         String result = null;
         try {
             DcWtf dcWtf = new DcWtf();
-            String str = "552ff1b3-0b9c-4bef-b7eb-b121119067f5";
+            String str = UUID.randomUUID().toString();
             String str2 = "";
-            String str3 = "1736135309751";
+            String str3 = System.currentTimeMillis() + "";
             String sign = dcWtf.getSign(str, str2, str3);
             result = sign;
             dcWtf.destroy();

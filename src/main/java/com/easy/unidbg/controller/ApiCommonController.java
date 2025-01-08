@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Method;
 
-/**
- * 通用API
- */
+
 @RestController
 @RequestMapping("/api/common")
 public class ApiCommonController {
