@@ -16,8 +16,8 @@ java -jar easy-unidbg-boot-server-1.1.0-SNAPSHOT.jar --F=./XX1.class --F=./XX2.c
 # 如何使用？
 访问：启动中发现打印日志：模块==> xxxx 记住这个，或者就是记住的类路，不想记忆的就直接copy日志中的内容
 
-## http://localhost:8080/api/common/get?module=com.sum.dcgc.DcWtf&params=1,2
-
+## http://localhost:8080/api/common/get?module=类全路径&params=1,2
+ 比如：com.XXX.类
 ## module 为上面说的这个，params 多个参数 用英文,隔开传递
 params为传递参数public static void main(String[] args) 
 
