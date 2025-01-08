@@ -1,3 +1,4 @@
+# 写这个框架目的就是不想去写api 在unidbg调试好后，直接命令行即可实现api接口调用
 # 打包使用
 mvn clean package -Dmaven.test.skip=true 
 # 复制target目录下的lib和easy-unidbg-boot-server-x.x.x-SNAPSHOT.jar
