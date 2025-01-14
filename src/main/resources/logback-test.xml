@@ -1,0 +1,6 @@
+<configuration>
+    <logger name="com.github.unidbg" level="INFO"/>
+    <logger name="com.github.unidbg.linux" level="INFO"/>
+    <logger name="com.github.unidbg.unix" level="INFO"/>
+    <logger name="com.github.unidbg.thread" level="INFO"/>
+</configuration>

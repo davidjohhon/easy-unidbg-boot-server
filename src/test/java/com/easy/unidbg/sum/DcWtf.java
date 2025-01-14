@@ -1,58 +1,59 @@
-package com.easy.unidbg.service;
+package com.easy.unidbg.sum;
+
 
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
-import com.github.unidbg.linux.android.dvm.*;
+import com.github.unidbg.linux.android.dvm.AbstractJni;
+import com.github.unidbg.linux.android.dvm.BaseVM;
+import com.github.unidbg.linux.android.dvm.DalvikModule;
+import com.github.unidbg.linux.android.dvm.DvmClass;
+import com.github.unidbg.linux.android.dvm.DvmObject;
+import com.github.unidbg.linux.android.dvm.StringObject;
+import com.github.unidbg.linux.android.dvm.VM;
+import com.github.unidbg.linux.android.dvm.VaList;
 import com.github.unidbg.memory.Memory;
 
 import java.io.File;
 import java.io.IOException;
 
 public class DcWtf extends AbstractJni {
-
-    private final AndroidEmulator emulator;
-
+    private final AndroidEmulator emulator = (AndroidEmulator) AndroidEmulatorBuilder.for64Bit().setProcessName("com.dachuan.news").addBackendFactory(new Unicorn2Factory(true)).build();
     private final DvmClass dvmClass;
     private final VM vm;
-
     private static final String processName = "com.dachuan.news";
     private static final String filePath = "assets/dcgc/libwtf.so";
     private static final String classPath = "cn/thecover/lib/common/manager/SignManager";
 
     public DcWtf() {
-        emulator = AndroidEmulatorBuilder.for64Bit().setProcessName(processName).addBackendFactory(new Unicorn2Factory(true)).build(); // 创建模拟器实例，要模拟32位或者64位，在这里区分
-        Memory memory = emulator.getMemory();
-        memory.setLibraryResolver(new AndroidResolver(23));
-        vm = emulator.createDalvikVM();
-        vm.setJni(this);
-        vm.setVerbose(false);
-        DalvikModule dm = vm.loadLibrary(new File(filePath), false);
-        dm.callJNI_OnLoad(emulator);
-        dvmClass = vm.resolveClass(classPath);
+        Memory memory = this.emulator.getMemory();
+        memory.setLibraryResolver(new AndroidResolver(23, new String[0]));
+        this.vm = this.emulator.createDalvikVM();
+        this.vm.setJni(this);
+        this.vm.setVerbose(false);
+        DalvikModule dm = this.vm.loadLibrary(new File("assets/dcgc/libwtf.so"), false);
+        dm.callJNI_OnLoad(this.emulator);
+        this.dvmClass = this.vm.resolveClass("cn/thecover/lib/common/manager/SignManager", new DvmClass[0]);
     }
-
 
     public String getSign(String p1, String p2, String p3) {
         String methodSign = "getSign(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;";
-        StringObject obj = dvmClass.callStaticJniMethodObject(emulator, methodSign, new StringObject(vm, p1), new StringObject(vm, p2), new StringObject(vm, p3));
-        return obj.getValue();
+        StringObject obj = (StringObject) this.dvmClass.callStaticJniMethodObject(this.emulator, methodSign, new Object[]{new StringObject(this.vm, p1), new StringObject(this.vm, p2), new StringObject(this.vm, p3)});
+        return (String) obj.getValue();
     }
 
-    @Override
     public DvmObject<?> callStaticObjectMethodV(BaseVM vm, DvmClass dvmClass, String signature, VaList vaList) {
         switch (signature) {
             case "cn/thecover/lib/common/utils/LogShutDown->getAppSign()Ljava/lang/String;":
                 return new StringObject(vm, "A262FA6ED59F60E49FD49E205F68426D");
+            default:
+                return super.callStaticObjectMethodV(vm, dvmClass, signature, vaList);
         }
-
-        return super.callStaticObjectMethodV(vm, dvmClass, signature, vaList);
     }
 
-
     public void destroy() throws IOException {
-        emulator.close();
+        this.emulator.close();
     }
 
     public static void main(String[] args) throws Exception {
@@ -65,3 +66,4 @@ public class DcWtf extends AbstractJni {
         dcWtf.destroy();
     }
 }
+

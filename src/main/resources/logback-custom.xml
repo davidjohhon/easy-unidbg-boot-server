@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="10 seconds" debug="false">
+    <springProperty scope="context" name="log-config.log-home" source="log-config.log-home"/>
+    <springProperty scope="context" name="log-config.max-history" source="log-config.max-history"/>
+    <springProperty scope="context" name="log-config.max-file-size" source="log-config.max-file-size"/>
+    <springProperty scope="context" name="log-config.pattern.console" source="log-config.pattern.console"/>
+    <springProperty scope="context" name="log-config.pattern.file" source="log-config.pattern.file"/>
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${log-config.pattern.console}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+    <appender name="sysLog"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log-config.log-home}/sys.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log-config.log-home}/sys.%d.%i.log</fileNamePattern>
+            <maxHistory>${log-config.max-history}</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${log-config.max-file-size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>
+                ${log-config.pattern.file}
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <appender name="errorLog"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log-config.log-home}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log-config.log-home}/error.%d.%i.log</fileNamePattern>
+            <maxHistory>${log-config.max-history}</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${log-config.max-file-size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>
+                ${log-config.pattern.file}
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+    <logger name="com.easy.unidbg" level="INFO">
+        <appender-ref ref="sysLog"/>
+        <appender-ref ref="errorLog"/>
+    </logger>
+</configuration>

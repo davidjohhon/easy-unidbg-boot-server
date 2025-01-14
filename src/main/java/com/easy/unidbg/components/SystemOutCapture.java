@@ -14,6 +14,7 @@ public class SystemOutCapture {
     private final PrintStream originalOut = System.out;
 
     public void startCapture() {
+        threadLocalOutput.get().reset();
         System.setOut(threadLocalPrintStream.get());
     }
 

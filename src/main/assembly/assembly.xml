@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+    <id>1</id>
+    <formats>
+        <format>tar.gz</format>
+        <format>zip</format>
+    </formats>
+
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+
+        <fileSet>
+            <directory>${basedir}/sh</directory>
+            <outputDirectory>.</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>**.sh</include>
+                <include>**.bat</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/tasks</directory>
+            <outputDirectory>tasks</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>*.class</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/target/classes</directory>
+            <outputDirectory>.</outputDirectory>
+            <fileMode>0644</fileMode>
+            <includes>
+                <include>application.yml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/target/lib</directory>
+            <outputDirectory>lib</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/assets</directory>
+            <outputDirectory>assets</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}/target</directory>
+            <outputDirectory>.</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>${project.build.finalName}.jar</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${basedir}</directory>
+            <includes>
+                <include>NOTICE</include>
+                <include>LICENSE</include>
+                <include>*.md</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+</assembly>

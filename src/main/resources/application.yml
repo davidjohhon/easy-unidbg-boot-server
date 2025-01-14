@@ -1,3 +1,14 @@
 spring:
   application:
     name: easy-unidbg-boot-server
+server:
+  port: 8080
+logging:
+  config: classpath:logback-custom.xml
+log-config:
+  log-home: ./logs
+  max-history: 30
+  max-file-size: 100MB
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan}[lineno:%clr(%5.5line)] %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %X{TRACE_ID}  ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%t] %-40.40logger{39}[lineno:%line]: %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}"
