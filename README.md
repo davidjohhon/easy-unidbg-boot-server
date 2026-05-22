@@ -1,90 +1,193 @@
-# 写这个框架目的就是不用去写api 在unidbg调试好后，直接命令行即可实现api接口调用
-## 不需要去启动服务，你只需要把文件路径指向那个class文件，即可实现热更新
-## 你也不需要做任何的开发
-## 甚至你只需要把路径指向class路径即可
-## 快速使用
-### linux 或者mac
-```js
-./start.sh
+[中文版](./README.zh-CN.md)
+
+# easy-unidbg-boot-server
+
+Expose your unidbg debugging results as HTTP APIs **without writing any API code**. Just drop your compiled `.class` file into the `tasks/` directory, and you're done.
+
+## Features
+
+- **Zero API development** — no Controller, no Service, no boilerplate
+- **Hot reload** — class files are watched and reloaded automatically every 5 seconds (by MD5 change), no server restart required
+- **Dual HTTP methods** — supports both GET and POST requests
+- **Custom ClassLoader** — dynamically loads and manages class modules at runtime
+- **System.out capture** — whatever your `main()` prints becomes the API response
+- **Static resource support** — place `.so` / other assets in the `assets/` directory
+
+## Quick Start
+
+### Prerequisites
+
+- Java 8+
+- Maven (to build)
+
+### Build
+
+```bash
+mvn clean package
 ```
 
-### window 
-```shell
-./start.bat
+### Run
+
+```bash
+# Hot reload mode (recommended) — watches ./tasks directory
+java -Xms256m -Xmx256m -jar target/easy-unidbg-boot-server-*.jar --U=./tasks
+
+# Static mode — load a specific class
+java -Xms256m -Xmx256m -jar target/easy-unidbg-boot-server-*.jar --F=./tasks/DcWtf.class
+
+# Combined — static load + hot reload watching
+java -Xms256m -Xmx256m -jar target/easy-unidbg-boot-server-*.jar --F=./tasks/DcWtf.class --U=./tasks
 ```
 
-## 注意事项
-### 资源文件 放入 assets目录下
-```shell
-//比如java开发环境下应该这样放置你得静态资源,你需要把静态资源复制到这个assets目录下面
-private static final String filePath = "assets/dcgc/libwtf.so";
-```
-### 寻找你得模块文件对应得.class文件，这个文件在你得target目录下得classes中进行寻找
-### 找到这个文件后，你需要把这个文件复制到tasks目录下面
-### main函数必须有，并且在你得代码中返回结果用System.out.println("结果") 返回
-```shell
-//例如:
- public static void main(String[] args) throws Exception {
-        DcWtf dcWtf = new DcWtf();
-        String str = "552ff1b3-0b9c-4bef-b7eb-b121119067f6";
-        String str2 = "";
-        String str3 = "1736135309751";
-        String sign = dcWtf.getSign(str, str2, str3);
-        System.out.println("sign=" + sign);
-        dcWtf.destroy();
-    }
- 
-```
-### 修改端口 application.yml 默认8080 
-```yml
-spring:
-  application:
-    name: easy-unidbg-boot-server
-server:
-  port: 8080
-```
-### 如果你有一些第三方依赖包，未找到，请自行添加到lib目录下
+### Using start scripts
 
-### python sdk 查询结果
-### api-get请求
-```python 
+```bash
+# Linux / macOS
+./sh/start.sh
+
+# Windows
+./sh/start.bat
+```
+
+Server starts on **http://localhost:8080** by default.
+
+## Project Structure
+
+```
+easy-unidbg-boot-server/
+├── assets/           # Static resource files (e.g. .so, images)
+│   └── dcgc/
+│       └── libwtf.so
+├── sh/               # Start scripts
+│   ├── start.sh      #   Linux / macOS
+│   └── start.bat     #   Windows
+├── sdk/              # Client SDK examples
+│   └── python/
+├── tasks/            # Drop your .class files here
+│   └── DcWtf.class
+├── src/              # Source code
+└── pom.xml
+```
+
+## API Usage
+
+### Invoke a module
+
+**Endpoint:** `/api/common/invoke`
+
+#### GET request
+
+```
+GET /api/common/invoke?module=com.sum.dcgc.DcWtf&args=arg1,arg2
+```
+
+```python
 import requests
 
 url = "http://localhost:8080/api/common/invoke"
-# module 为类路径
-# args 为main函数参数
 params = {
     "module": "com.sum.dcgc.DcWtf",
     "args": "1,2"
 }
 response = requests.get(url, params=params)
-
 print(response.text)
-print(response)
-
 ```
-### api-post请求
-```python 
-import json
 
+#### POST request
+
+```python
 import requests
 
 url = "http://localhost:8080/api/common/invoke"
-# module 为类路径
-module = "com.sum.dcgc.DcWtf"
-# args 为main函数参数
-args = [1, 2]
-
 data = {
-    "module": module,
-    "args": [1, 2]
+    "module": "com.sum.dcgc.DcWtf",
+    "args": ["1", "2"]
 }
-headers = {
-    'Content-Type': 'application/json',
-}
+headers = {"Content-Type": "application/json"}
 response = requests.post(url, headers=headers, json=data)
-
 print(response.text)
-print(response)
 ```
 
+#### Response
+
+```json
+{
+  "ts": 1700000000000,
+  "status": "ok",
+  "data": "sign=xxxx"
+}
+```
+
+## How to Write a Module
+
+1. **Your class must have a `main(String[] args)` method**
+2. **Return results via `System.out.println()`** — stdout is captured and returned as the API response
+3. **Put the compiled `.class` file into the `tasks/` directory**
+
+Example:
+
+```java
+public class DcWtf {
+    private final AndroidEmulator emulator;
+    private final DvmClass dvmClass;
+
+    public DcWtf() {
+        // ... unidbg initialization ...
+    }
+
+    public String getSign(String p1, String p2, String p3) {
+        // ... call native method via unidbg ...
+        return result;
+    }
+
+    public static void main(String[] args) throws Exception {
+        DcWtf dcWtf = new DcWtf();
+        String sign = dcWtf.getSign(args[0], args[1], args[2]);
+        System.out.println("sign=" + sign);
+        dcWtf.destroy();
+    }
+}
+```
+
+## Static Resources
+
+Place resource files (`.so`, images, etc.) in the `assets/` directory.
+
+```java
+// In your unidbg code, reference them as:
+private static final String filePath = "assets/dcgc/libwtf.so";
+```
+
+## Configuration
+
+Edit `src/main/resources/application.yml`:
+
+```yaml
+server:
+  port: 8080    # change port here
+```
+
+## Hot Reload Details
+
+- When started with `--U=<directory>`, the server scans `.class` files every 5 seconds
+- MD5 is computed for each file; only changed files trigger class reload
+- Removed files are automatically unloaded
+- This allows you to modify and recompile your unidbg code without restarting the server
+
+## Adding External Dependencies
+
+If your module depends on third-party JARs, place them in the `lib/` directory next to the JAR.
+
+## Tech Stack
+
+| Component | Version |
+|-----------|---------|
+| Spring Boot | 2.6.6 |
+| unidbg | 0.9.8 |
+| Java | 8+ |
+| Lombok | 1.18.30 |
+| Gson | 2.8.9 |
+
+## License
+
+MIT
