@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{profile.title}">Profile - Admin</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrap">
+        <div th:replace="admin/fragments::sidebar ('profile')"></div>
+        <div class="content p-4 w-100" style="max-width: 600px;">
+            <h2 class="mb-4" th:text="#{profile.title}">Profile</h2>
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 th:text="#{profile.account}">Account</h5>
+                    <p class="mb-0"><span th:text="#{profile.username}">Username</span>: <strong th:text="${username}"></strong></p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0" th:text="#{profile.changePassword}">Change Password</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/admin/profile/password}" method="post" onsubmit="return hashPasswords(this, ['oldPassword','newPassword','confirmPassword'])">
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{profile.currentPassword}">Current Password</label>
+                            <input type="password" name="oldPassword" class="form-control" required id="oldPassword">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{profile.newPassword}">New Password</label>
+                            <input type="password" name="newPassword" class="form-control" required minlength="6" id="newPassword">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{profile.confirmNewPassword}">Confirm New Password</label>
+                            <input type="password" name="confirmPassword" class="form-control" required minlength="6" id="confirmPassword">
+                        </div>
+                        <button type="submit" class="btn btn-primary"><span th:text="#{profile.updatePassword}">Update Password</span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/md5.min.js"></script>
+    <script>
+        function hashPasswords(form, ids) {
+            ids.forEach(function(id) {
+                var el = form.querySelector('#' + id);
+                if (el) el.value = md5(el.value);
+            });
+            return true;
+        }
+    </script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+    <div th:replace="admin/fragments::footer"></div>
+</html>

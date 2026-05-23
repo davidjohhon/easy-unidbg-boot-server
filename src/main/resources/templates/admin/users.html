@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{user.management}">Users - Admin</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrap">
+        <div th:replace="admin/fragments::sidebar ('users')"></div>
+        <div class="content p-4 w-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0" th:text="#{user.management}">User Management</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-person-plus"></i> <span th:text="#{user.addUser}">Add User</span>
+                </button>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th th:text="#{user.username}">Username</th>
+                                <th th:text="#{user.created}">Created</th>
+                                <th th:text="#{user.actions}">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${users}">
+                                <td th:text="${u.id}"></td>
+                                <td><strong th:text="${u.username}"></strong></td>
+                                <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <form th:action="@{/admin/users/delete/{id}(id=${u.id})}" method="post" style="display:inline" th:attr="onsubmit='return confirm(\'Delete user ' + ${u.username} + '?\')'">
+                                        <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/users/add}" method="post" onsubmit="return hashPasswords(this, ['addPassword','addConfirmPassword'])">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:text="#{user.addTitle}">Add User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required minlength="6" id="addPassword">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" name="confirmPassword" class="form-control" required minlength="6" id="addConfirmPassword">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/js/md5.min.js"></script>
+    <script>
+        function hashPasswords(form, ids) {
+            ids.forEach(function(id) {
+                var el = form.querySelector('#' + id);
+                if (el) el.value = md5(el.value);
+            });
+            return true;
+        }
+    </script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+    <div th:replace="admin/fragments::footer"></div>
+</html>

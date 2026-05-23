@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{service.management}">Services - Admin</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrap">
+        <div th:replace="admin/fragments::sidebar ('modules')"></div>
+        <div class="content p-4 w-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0" th:text="#{service.management}">Service Management</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> <span th:text="#{service.upload}">Upload Service</span>
+                </button>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" th:text="${success}">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" th:text="${error}">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th th:text="#{service.serverName}">Server Name</th>
+                                <th th:text="#{service.main}">Main</th>
+                                <th th:text="#{service.status}">Status</th>
+                                <th th:text="#{service.resources}">Resources</th>
+                                <th th:text="#{service.created}">Created</th>
+                                <th th:text="#{service.actions}">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${modules}">
+                                <td th:text="${m.id}"></td>
+                                <td><code th:text="${m.moduleName}"></code></td>
+                                <td th:text="${m.fileName}"></td>
+                                <td>
+                                    <span th:if="${m.status == 'ONLINE'}" class="badge bg-success">ONLINE</span>
+                                    <span th:if="${m.status == 'OFFLINE'}" class="badge bg-secondary">OFFLINE</span>
+                                    <span th:if="${m.status == 'ERROR'}" class="badge bg-danger" th:title="${m.errorMessage}">ERROR</span>
+                                </td>
+                                <td>
+                                    <div th:each="rf : ${resourceMap[m.id]}">
+                                        <code class="small" th:text="${rf.originalName}"></code>
+                                        <form th:action="@{/admin/modules/resources/delete/{fileId}(fileId=${rf.id})}" method="post" style="display:inline" onsubmit="return confirm('Delete this resource file?')">
+                                            <button class="btn btn-sm btn-outline-danger py-0 px-1" title="Delete resource file">×</button>
+                                        </form>
+                                        <br>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary mt-1" data-bs-toggle="modal" th:attr="data-bs-target='#resourceModal' + ${m.id}" title="Upload resources">
+                                        <i class="bi bi-plus-circle"></i> .so
+                                    </button>
+                                </td>
+                                <td th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <form th:if="${m.status == 'ONLINE'}" th:action="@{/admin/modules/offline/{id}(id=${m.id})}" method="post" style="display:inline">
+                                        <button class="btn btn-sm btn-outline-warning" title="Take Offline"><i class="bi bi-pause-circle"></i> <span th:text="#{service.offline}">Offline</span></button>
+                                    </form>
+                                    <form th:unless="${m.status == 'ONLINE'}" th:action="@{/admin/modules/online/{id}(id=${m.id})}" method="post" style="display:inline">
+                                        <button class="btn btn-sm btn-outline-success" title="Bring Online"><i class="bi bi-play-circle"></i> <span th:text="#{service.online}">Online</span></button>
+                                    </form>
+                                    <form th:action="@{/admin/modules/reload/{id}(id=${m.id})}" method="post" style="display:inline">
+                                        <button class="btn btn-sm btn-outline-info" title="Reload"><i class="bi bi-arrow-clockwise"></i></button>
+                                    </form>
+                                    <form th:unless="${m.status == 'ONLINE'}" th:action="@{/admin/modules/delete/{id}(id=${m.id})}" method="post" style="display:inline" onsubmit="return confirm('Delete this module and all its resources?')">
+                                        <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(modules)}">
+                                <td colspan="7" class="text-center text-muted py-4"><span th:text="#{service.noServices}">No services uploaded yet</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/admin/modules/upload}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:text="#{service.uploadTitle}">Upload Service</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">.class file <span class="text-danger">*</span></label>
+                            <input type="file" name="file" class="form-control" accept=".class" required>
+                            <div class="text-muted small mt-1">
+                                Compiled <code>.class</code> file. Must have a <code>main(String[])</code> method.
+                            </div>
+                        </div>
+                        <hr>
+                        <h6>Resource Files <small class="text-muted">(optional .so files)</small></h6>
+                        <div class="text-muted small mb-2">
+                            <i class="bi bi-info-circle"></i> Files will be placed in <code>assets/&lt;package&gt;/</code> automatically based on the class package name.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select .so files</label>
+                            <input type="file" name="resourceFiles" class="form-control" accept=".so" multiple>
+                            <div class="text-muted small mt-1">You can select multiple <code>.so</code> files. They will be deleted when the service is deleted or taken offline.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:each="m : ${modules}" th:id="'resourceModal' + ${m.id}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/modules/{id}/resources(id=${m.id})}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:text="#{service.uploadResources}">Upload Resources</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small text-muted"><span th:text="#{service.addingResources}">Adding resources for</span> <code th:text="${m.moduleName}"></code></p>
+                        <div class="text-muted small mb-2">
+                            <i class="bi bi-info-circle"></i> Files will be placed in <code>assets/&lt;package&gt;/</code> automatically.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select .so files</label>
+                            <input type="file" name="resourceFiles" class="form-control" accept=".so" multiple required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+    <div th:replace="admin/fragments::footer"></div>
+</html>

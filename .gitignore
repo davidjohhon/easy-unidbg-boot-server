@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Build output
+target/
+*.jar
+*.war
+
+# Runtime data
+data/
+logs/
+sh/data/
+sh/logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -3,19 +3,27 @@ package com.easy.unidbg.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
+/**
+ * Unified API response wrapper.
+ * All API endpoints return this structure. Null fields are omitted from JSON.
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResultDTO<T> {
 
+    /** Response timestamp (epoch millis) */
     private Long ts;
 
+    /** Error code (present only on failure) */
     private Integer errorCode;
 
-
+    /** Error message (present only on failure) */
     private String errorMsg;
 
+    /** "ok" or "fail" */
     private String status;
 
+    /** Response payload (present only on success) */
     private T data;
 
     private ResultDTO() {

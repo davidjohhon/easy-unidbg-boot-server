@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Access Logs - Admin</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrap">
+        <div th:replace="admin/fragments::sidebar ('logs')"></div>
+        <div class="content p-4 w-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0" th:text="#{accessLogs.title}">Access Logs</h2>
+                <form th:action="@{/admin/logs/clear}" method="post" onsubmit="return confirm('Clear all access logs?')">
+                    <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> <span th:text="#{accessLogs.clearAll}">Clear All</span></button>
+                </form>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form th:action="@{/admin/logs}" method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{accessLogs.serverName}">Server Name</label>
+                            <select name="moduleName" class="form-select">
+                                <option value="">All</option>
+                                <option th:each="m : ${modules}" th:value="${m.moduleName}" th:text="${m.moduleName}" th:selected="${moduleName == m.moduleName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" th:text="#{accessLogs.status}">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All</option>
+                                <option value="ok" th:selected="${status == 'ok'}">ok</option>
+                                <option value="error" th:selected="${status == 'error'}">error</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" th:text="#{accessLogs.startDate}">Start Date</label>
+                            <input type="date" name="startDate" class="form-control" th:value="${startDate}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" th:text="#{accessLogs.endDate}">End Date</label>
+                            <input type="date" name="endDate" class="form-control" th:value="${endDate}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> <span th:text="#{accessLogs.search}">Search</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Server</th>
+                                <th>Args</th>
+                                <th>Response</th>
+                                <th>Client IP</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="log : ${logs}">
+                                <td th:text="${log.id}"></td>
+                                <td><code class="small" th:text="${log.moduleName}"></code></td>
+                                <td><code class="small" th:text="${log.requestArgs}"></code></td>
+                                <td><code class="small" th:text="${#strings.abbreviate(log.responseData, 40)}"></code></td>
+                                <td th:text="${log.clientIp}"></td>
+                                <td>
+                                    <span th:if="${log.responseStatus == 'ok'}" class="badge bg-success">ok</span>
+                                    <span th:if="${log.responseStatus == 'error'}" class="badge bg-danger">error</span>
+                                </td>
+                                <td th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(logs)}">
+                                <td colspan="7" class="text-center text-muted py-4">No logs found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <nav class="mt-3" th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${currentPage - 1}, moduleName=${moduleName}, startDate=${startDate}, endDate=${endDate})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${i}, moduleName=${moduleName}, startDate=${startDate}, endDate=${endDate})}" th:text="${i + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${currentPage + 1}, moduleName=${moduleName}, startDate=${startDate}, endDate=${endDate})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            <p class="text-muted text-center small" th:if="${totalPages > 0}" th:text="'Total: ' + ${totalElements} + ' records'"></p>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+    <div th:replace="admin/fragments::footer"></div>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{login.title}">Admin Login</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; display: flex; align-items: center; min-height: 100vh; }
+        .login-card { max-width: 400px; width: 100%; margin: 0 auto; }
+        .lang-switch { position: absolute; top: 20px; right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <a th:href="@{/admin/login(lang=en)}" class="btn btn-sm btn-outline-secondary" th:classappend="${session.LANG == null || session.LANG == 'en'} ? 'active' : ''">EN</a>
+        <a th:href="@{/admin/login(lang=zh)}" class="btn btn-sm btn-outline-secondary" th:classappend="${session.LANG == 'zh'} ? 'active' : ''">中文</a>
+    </div>
+    <div class="container">
+        <div class="login-card">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold" style="color:#1e293b;letter-spacing:-0.5px;">Easy Unidbg</h3>
+                    </div>
+                    <div th:if="${error}" class="alert alert-danger" th:text="#{login.invalid}"></div>
+                    <form th:action="@{/admin/login}" method="post" onsubmit="return hashPassword(this)">
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{login.username}">Username</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" th:text="#{login.password}">Password</label>
+                            <input type="password" name="password" class="form-control" required id="loginPassword">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" th:text="#{login.login}">Login</button>
+                    </form>
+                    <p class="text-muted text-center mt-3 small">v<span th:text="${appVersion}">1.0.0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/md5.min.js"></script>
+    <script>
+        function hashPassword(form) {
+            var pwd = form.querySelector('#loginPassword');
+            if (pwd) pwd.value = md5(pwd.value);
+            return true;
+        }
+    </script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

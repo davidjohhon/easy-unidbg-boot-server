@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>API Keys - Admin</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrap">
+        <div th:replace="admin/fragments::sidebar ('apikeys')"></div>
+        <div class="content p-4 w-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0" th:text="#{apikey.title}">API Keys</h2>
+                <form th:action="@{/admin/apikeys/generate}" method="post">
+                    <button class="btn btn-primary"><i class="bi bi-key"></i> <span th:text="#{apikey.generate}">Generate New Key</span></button>
+                </form>
+            </div>
+
+            <div th:if="${newApiKey}" class="alert alert-success">
+                <strong th:text="#{apikey.newKey}">New API Key:</strong>
+                <code class="d-block mt-2 p-2 bg-light border rounded" th:text="${newApiKey}"></code>
+                <span class="small text-muted" th:text="#{apikey.copyHint}">Copy this key now. It will not be shown again.</span>
+            </div>
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th th:text="#{apikey.key}">API Key</th>
+                                <th th:text="#{apikey.created}">Created</th>
+                                <th th:text="#{apikey.actions}">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="k : ${apikeys}">
+                                <td th:text="${k.id}"></td>
+                                <td><code th:text="${k.keyPrefix} + '************************'"></code></td>
+                                <td th:text="${#temporals.format(k.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <form th:action="@{/admin/apikeys/delete/{id}(id=${k.id})}" method="post" style="display:inline" th:attr="onsubmit='return confirm(\'' + #{apikey.deleteConfirm} + '\')'">
+                                        <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(apikeys)}">
+                                <td colspan="4" class="text-center text-muted py-4" th:text="#{apikey.noKeys}">No API keys yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <nav class="mt-3" th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/apikeys(page=${currentPage - 1})}" th:text="#{accessLogs.previous}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/apikeys(page=${i})}" th:text="${i + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/apikeys(page=${currentPage + 1})}" th:text="#{accessLogs.next}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            <p class="text-muted text-center small" th:if="${totalPages > 0}" th:text="'Total: ' + ${totalElements} + ' records'"></p>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+    <div th:replace="admin/fragments::footer"></div>
+</html>
